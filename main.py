@@ -62,6 +62,36 @@ def lcs(X: List[str], Y: List[str]) -> Tuple[int, float, int]:
 
     return lcs_length, similarity_percentage, non_lcs_words
 
+def levenshtein_distance(s1: str, s2: str) -> Tuple[int, float, int, int]:
+    """
+    Computes the Levenshtein distance between two strings and returns additional information.
+    Returns a tuple containing:
+    - Levenshtein distance
+    - Similarity percentage
+    - Number of matching characters
+    - Number of differing characters
+    """
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    
+    distance = previous_row[-1]
+    total_chars = max(len(s1), len(s2))
+    similarity_percentage = (1 - distance / total_chars) * 100
+    matches = total_chars - distance
+    differences = distance
+
+    return distance, similarity_percentage, matches, differences
+
 # Example usage
 file1 = 'TestFiles/file_1.txt'
 file2 = 'TestFiles/file_2.txt'
@@ -84,4 +114,9 @@ print(f"LCS Length: {lcs_length}")
 print(f"LCS Similarity: {lcs_similarity_percentage:.2f}%")
 print(f"Non-LCS words: {non_lcs_words}")
 
-
+# Calculate Levenshtein Distance between two strings (join words for sentence-level comparison)
+lev_distance, lev_similarity, matches, differences = levenshtein_distance(' '.join(words1_list), ' '.join(words2_list))
+print(f"Levenshtein Distance: {lev_distance}")
+print(f"Levenshtein Similarity: {lev_similarity:.2f}%")
+print(f"Matching characters: {matches}")
+print(f"Differing characters: {differences}")

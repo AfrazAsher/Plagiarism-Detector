@@ -1,4 +1,6 @@
 from typing import Set, Tuple, List
+from collections import Counter
+import math
 
 def text_to_set(file_path: str) -> Set[str]:
     """
@@ -16,64 +18,44 @@ def text_to_list(file_path: str) -> List[str]:
         text = file.read()
     return text.lower().split()
 
+def text_to_vector(text: str) -> Counter:
+    """
+    Convert text to a vector (frequency counts of words).
+    """
+    words = text.split()
+    return Counter(words)
+
 def jaccard_similarity(set1: Set[str], set2: Set[str]) -> Tuple[float, int, int]:
     """
     Computes the Jaccard Similarity between two sets and returns additional information.
-    Returns a tuple containing:
-    - Jaccard Similarity as a percentage
-    - Number of common words
-    - Number of words that are not common
     """
     intersection = set1.intersection(set2)
     union = set1.union(set2)
     similarity = len(intersection) / len(union) if union else 0
-    common_words = len(intersection)
-    unique_words = len(union) - common_words
-    return similarity * 100, common_words, unique_words
+    return similarity * 100, len(intersection), len(union) - len(intersection)
 
 def lcs(X: List[str], Y: List[str]) -> Tuple[int, float, int]:
     """
-    Computes the Longest Common Subsequence (LCS) between two lists of words and returns additional information.
-    Returns a tuple containing:
-    - Length of LCS
-    - LCS Similarity as a percentage (based on the shorter of the two lists)
-    - Number of words that are not in the LCS
+    Computes the Longest Common Subsequence (LCS) and returns additional information.
     """
     m, n = len(X), len(Y)
     L = [[0] * (n + 1) for _ in range(m + 1)]
-
-    # Build the LCS table
     for i in range(1, m + 1):
         for j in range(1, n + 1):
             if X[i - 1] == Y[j - 1]:
                 L[i][j] = L[i - 1][j - 1] + 1
             else:
                 L[i][j] = max(L[i - 1][j], L[i][j - 1])
-
-    # LCS length
     lcs_length = L[m][n]
-
-    # Calculate similarity
-    shortest_length = min(m, n)
-    similarity_percentage = (lcs_length / shortest_length * 100) if shortest_length else 0
-
-    # Calculate non-LCS words
-    non_lcs_words = max(m, n) - lcs_length
-
-    return lcs_length, similarity_percentage, non_lcs_words
+    similarity_percentage = (lcs_length / min(m, n) * 100) if min(m, n) else 0
+    return lcs_length, similarity_percentage, max(m, n) - lcs_length
 
 def levenshtein_distance(s1: str, s2: str) -> Tuple[int, float, int, int]:
     """
-    Computes the Levenshtein distance between two strings and returns additional information.
-    Returns a tuple containing:
-    - Levenshtein distance
-    - Similarity percentage
-    - Number of matching characters
-    - Number of differing characters
+    Computes the Levenshtein distance and returns additional information.
     """
     if len(s1) < len(s2):
         return levenshtein_distance(s2, s1)
-
     previous_row = range(len(s2) + 1)
     for i, c1 in enumerate(s1):
         current_row = [i + 1]
@@ -83,14 +65,24 @@ def levenshtein_distance(s1: str, s2: str) -> Tuple[int, float, int, int]:
             substitutions = previous_row[j] + (c1 != c2)
             current_row.append(min(insertions, deletions, substitutions))
         previous_row = current_row
-    
     distance = previous_row[-1]
     total_chars = max(len(s1), len(s2))
     similarity_percentage = (1 - distance / total_chars) * 100
-    matches = total_chars - distance
-    differences = distance
+    return distance, similarity_percentage, total_chars - distance, distance
 
-    return distance, similarity_percentage, matches, differences
+def cosine_similarity(vec1: Counter, vec2: Counter) -> Tuple[float, int, int]:
+    """
+    Calculate the cosine similarity between two text vectors.
+    """
+    intersection = set(vec1.keys()) & set(vec2.keys())
+    numerator = sum([vec1[x] * vec2[x] for x in intersection])
+    sum1 = sum([vec1[x]**2 for x in vec1.keys()])
+    sum2 = sum([vec2[x]**2 for x in vec2.keys()])
+    denominator = math.sqrt(sum1) * math.sqrt(sum2)
+    if not denominator:
+        return 0.0, 0, len(vec1) + len(vec2)
+    cosine = numerator / denominator
+    return cosine * 100, len(intersection), (len(vec1) + len(vec2) - 2 * len(intersection))
 
 # Example usage
 file1 = 'TestFiles/file_1.txt'
@@ -101,6 +93,10 @@ words1_set = text_to_set(file1)
 words2_set = text_to_set(file2)
 words1_list = text_to_list(file1)
 words2_list = text_to_list(file2)
+words1_text = ' '.join(words1_list)
+words2_text = ' '.join(words2_list)
+vec1 = text_to_vector(words1_text)
+vec2 = text_to_vector(words2_text)
 
 # Calculate Jaccard Similarity and additional info
 similarity_percentage, common_words_count, unique_words_count = jaccard_similarity(words1_set, words2_set)
@@ -120,3 +116,9 @@ print(f"Levenshtein Distance: {lev_distance}")
 print(f"Levenshtein Similarity: {lev_similarity:.2f}%")
 print(f"Matching characters: {matches}")
 print(f"Differing characters: {differences}")
+
+# Calculate Cosine Similarity
+cosine_similarity_percentage, cosine_common_words, cosine_unique_words = cosine_similarity(vec1, vec2)
+print(f"Cosine Similarity: {cosine_similarity_percentage:.2f}%")
+print(f"Common words: {cosine_common_words}")
+print(f"Unique words: {cosine_unique_words}")

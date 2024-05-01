@@ -90,46 +90,42 @@ def rabin_karp(text: str, patterns: List[str]) -> Tuple[int, int, float]:
     """
     d = 256  # Number of characters in the input alphabet
     q = 101  # A prime number
-    m = max(len(pattern) for pattern in patterns) if patterns else 0
-    n = len(text)
-    if m == 0 or n == 0:
-        return 0, len(text.split()), 0  # No patterns or text to search
+    results = []
+    text_length = len(text)
 
-    h = pow(d, m-1) % q
-    p = [0] * len(patterns)
-    t = 0  # Hash value for text window
-    result = 0
-
-    # Calculate the hash value of the patterns and the first window of the text
-    for i in range(m):
-        if i < n:  # Check to prevent IndexError in text
+    for pattern in patterns:
+        m = len(pattern)
+        if m == 0 or text_length < m:
+            continue
+        h = pow(d, m-1) % q
+        p = 0  # Hash value for pattern
+        t = 0  # Hash value for text window
+        for i in range(m):  # Calculate the hash value of the pattern and the first window of the text
+            p = (d * p + ord(pattern[i])) % q
             t = (d * t + ord(text[i])) % q
-        for j in range(len(patterns)):
-            if i < len(patterns[j]):  # Check to prevent IndexError in patterns
-                p[j] = (d * p[j] + ord(patterns[j][i])) % q
 
-    # Slide the pattern over text one by one
-    for i in range(n - m + 1):
-        for j, pattern in enumerate(patterns):
-            if p[j] == t:
+        # Slide the pattern over text one by one
+        for i in range(text_length - m + 1):
+            # Check the hash values of current window of text and pattern
+            if p == t:
                 # Check for characters one by one
                 if text[i:i+m] == pattern:
-                    result += 1
+                    results.append(pattern)
+                    break  # Break after the first match to avoid counting multiple times
 
-        # Calculate the hash value for the next window of text: Remove leading digit, add trailing digit
-        if i < n-m:
-            t = (d*(t - ord(text[i])*h) + ord(text[i+m])) % q
-            # We might get negative values of t, converting it to positive
-            if t < 0:
-                t = t + q
+            # Calculate the hash value for the next window of text: Remove leading digit, add trailing digit
+            if i < text_length - m:
+                t = (d*(t - ord(text[i])*h) + ord(text[i+m])) % q
+                # We might get negative values of t, converting it to positive
+                if t < 0:
+                    t = t + q
 
-    common_words = result
+    common_words = len(results)
     all_words = len(text.split())
     unique_words = all_words - common_words
     similarity_percentage = common_words / all_words * 100 if all_words else 0
 
     return common_words, unique_words, similarity_percentage
-
 
 # Example usage
 file1 = 'TestFiles/file_1.txt'

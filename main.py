@@ -84,7 +84,7 @@ def cosine_similarity(vec1: Counter, vec2: Counter) -> Tuple[float, int, int]:
     cosine = numerator / denominator
     return cosine * 100, len(intersection), (len(vec1) + len(vec2) - 2 * len(intersection))
 
-def rabin_karp(text: str, patterns: List[str]) -> Tuple[int, int, int]:
+def rabin_karp(text: str, patterns: List[str]) -> Tuple[int, int, float]:
     """
     Rabin-Karp algorithm to find the number of matching and non-matching words.
     """
@@ -92,26 +92,29 @@ def rabin_karp(text: str, patterns: List[str]) -> Tuple[int, int, int]:
     q = 101  # A prime number
     m = max(len(pattern) for pattern in patterns) if patterns else 0
     n = len(text)
+    if m == 0 or n == 0:
+        return 0, len(text.split()), 0  # No patterns or text to search
+
     h = pow(d, m-1) % q
-    p = 0  # Hash value for pattern
-    t = 0  # Hash value for text
+    p = [0] * len(patterns)
+    t = 0  # Hash value for text window
     result = 0
 
-    if m == 0:
-        return 0, 0, len(text.split())
-
-    # Calculate the hash value of the pattern and the first window of the text
+    # Calculate the hash value of the patterns and the first window of the text
     for i in range(m):
-        p = (d * p + ord(patterns[0][i])) % q
-        t = (d * t + ord(text[i])) % q
+        if i < n:  # Check to prevent IndexError in text
+            t = (d * t + ord(text[i])) % q
+        for j in range(len(patterns)):
+            if i < len(patterns[j]):  # Check to prevent IndexError in patterns
+                p[j] = (d * p[j] + ord(patterns[j][i])) % q
 
     # Slide the pattern over text one by one
     for i in range(n - m + 1):
-        # Check the hash values of current window of text and pattern
-        if p == t:
-            # Check for characters one by one
-            if all(text[i:i+m] == patterns[j] for j, pattern in enumerate(patterns) if i + len(pattern) <= n):
-                result += 1
+        for j, pattern in enumerate(patterns):
+            if p[j] == t:
+                # Check for characters one by one
+                if text[i:i+m] == pattern:
+                    result += 1
 
         # Calculate the hash value for the next window of text: Remove leading digit, add trailing digit
         if i < n-m:
@@ -171,7 +174,8 @@ print(f"Common words: {cosine_common_words}")
 print(f"Unique words: {cosine_unique_words}")
 
 # Calculate Rabin-Karp
-rabin_karp_common_words, rabin_karp_unique_words, rabin_karp_similarity = rabin_karp(words1_text, words2_text, patterns)
+# Calculate using Rabin-Karp
+rabin_karp_common_words, rabin_karp_unique_words, rabin_karp_similarity = rabin_karp(words1_text, patterns)
 print(f"Rabin-Karp Common words: {rabin_karp_common_words}")
 print(f"Rabin-Karp Unique words: {rabin_karp_unique_words}")
 print(f"Rabin-Karp Similarity: {rabin_karp_similarity:.2f}%")

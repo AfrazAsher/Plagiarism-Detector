@@ -84,6 +84,50 @@ def cosine_similarity(vec1: Counter, vec2: Counter) -> Tuple[float, int, int]:
     cosine = numerator / denominator
     return cosine * 100, len(intersection), (len(vec1) + len(vec2) - 2 * len(intersection))
 
+def rabin_karp(text: str, patterns: List[str]) -> Tuple[int, int, int]:
+    """
+    Rabin-Karp algorithm to find the number of matching and non-matching words.
+    """
+    d = 256  # Number of characters in the input alphabet
+    q = 101  # A prime number
+    m = max(len(pattern) for pattern in patterns) if patterns else 0
+    n = len(text)
+    h = pow(d, m-1) % q
+    p = 0  # Hash value for pattern
+    t = 0  # Hash value for text
+    result = 0
+
+    if m == 0:
+        return 0, 0, len(text.split())
+
+    # Calculate the hash value of the pattern and the first window of the text
+    for i in range(m):
+        p = (d * p + ord(patterns[0][i])) % q
+        t = (d * t + ord(text[i])) % q
+
+    # Slide the pattern over text one by one
+    for i in range(n - m + 1):
+        # Check the hash values of current window of text and pattern
+        if p == t:
+            # Check for characters one by one
+            if all(text[i:i+m] == patterns[j] for j, pattern in enumerate(patterns) if i + len(pattern) <= n):
+                result += 1
+
+        # Calculate the hash value for the next window of text: Remove leading digit, add trailing digit
+        if i < n-m:
+            t = (d*(t - ord(text[i])*h) + ord(text[i+m])) % q
+            # We might get negative values of t, converting it to positive
+            if t < 0:
+                t = t + q
+
+    common_words = result
+    all_words = len(text.split())
+    unique_words = all_words - common_words
+    similarity_percentage = common_words / all_words * 100 if all_words else 0
+
+    return common_words, unique_words, similarity_percentage
+
+
 # Example usage
 file1 = 'TestFiles/file_1.txt'
 file2 = 'TestFiles/file_2.txt'
@@ -97,6 +141,9 @@ words1_text = ' '.join(words1_list)
 words2_text = ' '.join(words2_list)
 vec1 = text_to_vector(words1_text)
 vec2 = text_to_vector(words2_text)
+
+# Assume patterns is the list of unique words from the second file
+patterns = list(set(words2_list))
 
 # Calculate Jaccard Similarity and additional info
 similarity_percentage, common_words_count, unique_words_count = jaccard_similarity(words1_set, words2_set)
@@ -122,3 +169,9 @@ cosine_similarity_percentage, cosine_common_words, cosine_unique_words = cosine_
 print(f"Cosine Similarity: {cosine_similarity_percentage:.2f}%")
 print(f"Common words: {cosine_common_words}")
 print(f"Unique words: {cosine_unique_words}")
+
+# Calculate Rabin-Karp
+rabin_karp_common_words, rabin_karp_unique_words, rabin_karp_similarity = rabin_karp(words1_text, words2_text, patterns)
+print(f"Rabin-Karp Common words: {rabin_karp_common_words}")
+print(f"Rabin-Karp Unique words: {rabin_karp_unique_words}")
+print(f"Rabin-Karp Similarity: {rabin_karp_similarity:.2f}%")

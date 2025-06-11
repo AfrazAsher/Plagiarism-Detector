@@ -1,0 +1,61 @@
+{% extends 'academic/base_generic.html' %} {% block content %}
+<div class="container mt-5">
+  <h1>Welcome, {{ request.user.username }}</h1>
+  <p>Access your courses, assignments, and grades here.</p>
+
+  {% for course in courses %}
+  <div>
+    <h2>{{ course.name }}</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Due Date</th>
+          <th>Submission Format</th>
+          <th>Max Marks</th>
+          <th>Attachments</th>
+          <th>Upload</th>
+          <th>Plagiarism (%)</th>
+          <th>Marks Received</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for assignment in course.assignments.all %}
+        <tr>
+          <td>{{ assignment.title }}</td>
+          <td>{{ assignment.description }}</td>
+          <td>{{ assignment.due_date }}</td>
+          <td>{{ assignment.submission_format }}</td>
+          <td>{{ assignment.max_marks }}</td>
+          <td>
+            {% if assignment.attachments %}
+            <a href="{{ assignment.attachments.url }}" download>Download</a>
+            {% else %} No attachment {% endif %}
+          </td>
+          <!-- {% set submission =
+          assignment.submissions.filter(student=request.user).first %} -->
+          <td>
+            {% if submission %} Uploaded {% else %}
+            <form
+              method="post"
+              action="{% url 'upload_submission' assignment.id %}"
+              enctype="multipart/form-data"
+            >
+              {% csrf_token %}
+              <input type="file" name="submitted_file" required />
+              <button type="submit">Upload</button>
+            </form>
+
+            {% endif %}
+          </td>
+          <td>{{ submission.plagiarism_percentage|default:"N/A" }}</td>
+          <td>{{ submission.marks_awarded|default:"N/A" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

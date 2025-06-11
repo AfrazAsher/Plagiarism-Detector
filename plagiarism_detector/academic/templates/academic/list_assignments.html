@@ -1,0 +1,13 @@
+<!-- list_assignments.html -->
+{% extends 'academic/base_generic.html' %} {% block content %}
+<h2>Select an Assignment to Generate Report</h2>
+<ul>
+  {% for assignment in assignments %}
+  <li>
+    <a href="{% url 'generate_report' assignment_id=assignment.id %}"
+      >{{ assignment.title }}</a
+    >
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

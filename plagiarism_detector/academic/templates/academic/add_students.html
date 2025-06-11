@@ -1,0 +1,42 @@
+{% extends 'academic/base_generic.html' %} {% block content %}
+<div class="container">
+  <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary mb-3"
+    >Back to Dashboard</a
+  >
+
+  <h2>Add Student to Course</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="course">Course:</label>
+      <select name="course" id="course" class="form-control">
+        {% for course in courses %}
+        <option value="{{ course.id }}">{{ course.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="student">Student:</label>
+      <select name="student" id="student" class="form-control">
+        {% for student in students %}
+        <option value="{{ student.user.id }}">
+          {{ student.user.username }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Student</button>
+  </form>
+
+  <h3>Enrolled Students</h3>
+  <select id="enrolled_students" size="10" class="form-control">
+    {% for course in courses %}
+    <optgroup label="{{ course.name }}">
+      {% for student in course.students.all %}
+      <option>{{ student.username }} ({{ student.email }})</option>
+      {% endfor %}
+    </optgroup>
+    {% endfor %}
+  </select>
+</div>
+{% endblock %}

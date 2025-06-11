@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">Teacher Dashboard</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'create_course' %}"
+              >Create New Course</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'manage_courses' %}"
+              >Manage Courses</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'create_assignment' %}"
+              >Create Assignment</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_assignments' %}"
+              >View Assignments</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'plagiarism_reports' %}"
+              >Plagiarism Reports</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <h1>Welcome, {{ request.user.username }}!</h1>
+      <p>Here's what you can do:</p>
+      <div class="row">
+        <div class="col-sm-6 col-lg-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Courses</h5>
+              <p class="card-text">Create and manage your courses.</p>
+              <a href="{% url 'create_course' %}" class="btn btn-primary"
+                >Create Course</a
+              >
+              <a href="{% url 'manage_courses' %}" class="btn btn-secondary"
+                >Manage Courses</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Assignments</h5>
+              <p class="card-text">Create and view assignments.</p>
+              <a href="{% url 'create_assignment' %}" class="btn btn-primary"
+                >Create Assignment</a
+              >
+              <a href="{% url 'view_assignments' %}" class="btn btn-secondary"
+                >View Assignments</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Reports</h5>
+              <p class="card-text">Check plagiarism reports for submissions.</p>
+              <a href="{% url 'list_assignments' %}" class="btn btn-primary"
+                >Generate Report</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Students</h5>
+              <p class="card-text">Manage student enrollments.</p>
+              <a href="{% url 'add_students' %}" class="btn btn-primary"
+                >Add Students</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
